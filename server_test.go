@@ -11,7 +11,7 @@ func TestServer(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
-		WebSocketServer(response, request)
+		WebSocketServer{}.ServeHTTP(response, request)
 
 		got := response.Body.String()
 		want := "Hi!"
