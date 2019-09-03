@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,13 +12,8 @@ func TestServer(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
-		WebSocketServer{}.ServeHTTP(response, request)
+		NewServer().ServeHTTP(response, request)
 
-		got := response.Body.String()
-		want := "Hi!"
-
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+		assert.Equal(t, "Hi!", response.Body.String())
 	})
 }
