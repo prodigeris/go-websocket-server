@@ -6,12 +6,20 @@ import (
 )
 
 type WebSocketServer struct {
+	http.Handler
 }
 
-func (s WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s WebSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Hi!")
 }
 
-func NewServer() WebSocketServer {
-	return WebSocketServer{}
+func NewServer() *WebSocketServer {
+	server := new(WebSocketServer)
+
+	router := http.NewServeMux()
+	router.Handle("/", http.HandlerFunc(server.homePage))
+
+	server.Handler = router
+
+	return server
 }
