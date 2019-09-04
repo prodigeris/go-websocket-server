@@ -12,7 +12,7 @@ import (
 
 var timeout = 10 * time.Millisecond
 
-func TestServer(t *testing.T) {
+func TestHttpServer(t *testing.T) {
 	t.Run("Should return homepage", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
@@ -21,47 +21,47 @@ func TestServer(t *testing.T) {
 
 		assert.Equal(t, "Hi!", response.Body.String())
 	})
+}
 
-	t.Run("Should open websockets on ws endpoint", func(t *testing.T) {
+func TestWebSocketServer(t *testing.T) {
 
-		ws := startWebsocketServer(t)
-		defer ws.Close()
-	})
+	type test struct {
+		description     string
+		sentMessage     []byte
+		receivedMessage []byte
+	}
 
-	t.Run("Should be able to accept message", func(t *testing.T) {
+	tests := []test{
+		{description: "Should open WebSockets on /ws endpoint"},
+		{description: "Should be able to accept message", sentMessage: []byte("How are you")},
+		{
+			description:     "Should be able to send message back",
+			sentMessage:     []byte("How are you"),
+			receivedMessage: []byte("How are you"),
+		},
+		{
+			description:     "Should send transformed message back",
+			sentMessage:     []byte("How are you?"),
+			receivedMessage: []byte("How are you!"),
+		},
+	}
 
-		ws := startWebsocketServer(t)
-		defer ws.Close()
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			ws := startWebsocketServer(t)
+			defer ws.Close()
 
-		sentData := []byte("How are you")
-		assertWebSocketMessageSent(ws, sentData, t)
-	})
+			if tc.sentMessage != nil {
+				assertWebSocketMessageSent(ws, tc.sentMessage, t)
+			}
 
-	t.Run("Should be able to receive message", func(t *testing.T) {
-
-		ws := startWebsocketServer(t)
-		defer ws.Close()
-
-		sentData := []byte("How are you")
-		assertWebSocketMessageSent(ws, sentData, t)
-
-		within(t, timeout, func() {
-			assertWebSocketReadMessageIsCorrect(ws, sentData, t)
+			if tc.receivedMessage != nil {
+				within(t, timeout, func() {
+					assertWebSocketReadMessageIsCorrect(ws, tc.receivedMessage, t)
+				})
+			}
 		})
-	})
-
-	t.Run("Should receive transformed message", func(t *testing.T) {
-
-		ws := startWebsocketServer(t)
-		defer ws.Close()
-
-		sentData := []byte("How are you?")
-		assertWebSocketMessageSent(ws, sentData, t)
-
-		within(t, timeout, func() {
-			assertWebSocketReadMessageIsCorrect(ws, []byte("How are you!"), t)
-		})
-	})
+	}
 }
 
 func startWebsocketServer(t *testing.T) *websocket.Conn {
