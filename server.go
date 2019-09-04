@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
 )
@@ -17,7 +16,7 @@ type WebSocketServer struct {
 }
 
 func (s WebSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hi!")
+	http.ServeFile(w, r, "client.html")
 }
 
 func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {

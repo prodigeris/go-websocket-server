@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,13 +14,15 @@ import (
 var timeout = 10 * time.Millisecond
 
 func TestHttpServer(t *testing.T) {
-	t.Run("Should return homepage", func(t *testing.T) {
+	t.Run("Should serve HTML client", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
 		NewServer().ServeHTTP(response, request)
 
-		assert.Equal(t, "Hi!", response.Body.String())
+		expected, _ := ioutil.ReadFile("client.html")
+
+		assert.Equal(t, string(expected), response.Body.String())
 	})
 }
 
