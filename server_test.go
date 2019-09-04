@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var tenMiliseconds = 10 * time.Millisecond
+var timeout = 10 * time.Millisecond
 
 func TestServer(t *testing.T) {
 	t.Run("Should return homepage", func(t *testing.T) {
@@ -24,40 +24,40 @@ func TestServer(t *testing.T) {
 
 	t.Run("Should open websockets on ws endpoint", func(t *testing.T) {
 
-		server := httptest.NewServer(NewServer())
-		defer server.Close()
-
-		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
-
-		ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-		if err == nil {
-			defer ws.Close()
-		}
-
-		assert.NoError(t, err)
+		ws := startWebsocketServer(t)
+		defer ws.Close()
 	})
 
 	t.Run("Should respond to messages", func(t *testing.T) {
 
-		server := httptest.NewServer(NewServer())
-		defer server.Close()
+		ws := startWebsocketServer(t)
+		defer ws.Close()
 
-		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
+		sentData := []byte("How are you")
 
-		ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-		if err == nil {
-			defer ws.Close()
-		}
-
-		sentData := []byte("How are you?")
-
-		within(t, tenMiliseconds, func() {
-			ws.WriteMessage(websocket.TextMessage, sentData)
-
-			_, data, _ := ws.ReadMessage()
-			assert.Equal(t, sentData, data)
+		within(t, timeout, func() {
+			assertWebSocketHasSentMessage(ws, sentData, t)
 		})
 	})
+}
+
+func startWebsocketServer(t *testing.T) *websocket.Conn {
+	server := httptest.NewServer(NewServer())
+	defer server.Close()
+	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+
+	if err != nil {
+		t.Fatal("Cannot start a websocket server")
+	}
+
+	return ws
+}
+
+func assertWebSocketHasSentMessage(ws *websocket.Conn, sentData []byte, t *testing.T) {
+	ws.WriteMessage(websocket.TextMessage, sentData)
+	_, data, _ := ws.ReadMessage()
+	assert.Equal(t, sentData, data)
 }
 
 func within(t *testing.T, d time.Duration, assert func()) {
