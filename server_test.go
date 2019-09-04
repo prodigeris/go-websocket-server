@@ -62,6 +62,21 @@ func TestWebSocketServer(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Should close connection when non-text message received", func(t *testing.T) {
+		ws := startWebsocketServer(t)
+
+		err := ws.WriteMessage(websocket.BinaryMessage, []byte("Binary Message"))
+		if err != nil {
+			t.Fatal("Failed to send message to websocket")
+		}
+
+		within(t, timeout, func() {
+			messageType, _, _ := ws.ReadMessage()
+
+			assert.Equal(t, -1, messageType)
+		})
+	})
 }
 
 func startWebsocketServer(t *testing.T) *websocket.Conn {
