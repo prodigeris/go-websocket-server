@@ -20,7 +20,10 @@ func (s WebSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
-	upgrader.Upgrade(w, r, nil)
+	ws, _ := upgrader.Upgrade(w, r, nil)
+
+	_, message, _ := ws.ReadMessage()
+	ws.WriteMessage(websocket.TextMessage, message)
 }
 
 func NewServer() *WebSocketServer {
