@@ -37,7 +37,7 @@ func TestServer(t *testing.T) {
 		assertWebSocketMessageSent(ws, sentData, t)
 	})
 
-	t.Run("Should be receive message", func(t *testing.T) {
+	t.Run("Should be able to receive message", func(t *testing.T) {
 
 		ws := startWebsocketServer(t)
 		defer ws.Close()
@@ -47,6 +47,19 @@ func TestServer(t *testing.T) {
 
 		within(t, timeout, func() {
 			assertWebSocketReadMessageIsCorrect(ws, sentData, t)
+		})
+	})
+
+	t.Run("Should receive transformed message", func(t *testing.T) {
+
+		ws := startWebsocketServer(t)
+		defer ws.Close()
+
+		sentData := []byte("How are you?")
+		assertWebSocketMessageSent(ws, sentData, t)
+
+		within(t, timeout, func() {
+			assertWebSocketReadMessageIsCorrect(ws, []byte("How are you!"), t)
 		})
 	})
 }

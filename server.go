@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -23,6 +24,7 @@ func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	ws, _ := upgrader.Upgrade(w, r, nil)
 
 	_, message, _ := ws.ReadMessage()
+	message = bytes.Replace(message, []byte("?"), []byte("!"), -1)
 	ws.WriteMessage(websocket.TextMessage, message)
 }
 
