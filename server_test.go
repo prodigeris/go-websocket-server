@@ -28,15 +28,25 @@ func TestServer(t *testing.T) {
 		defer ws.Close()
 	})
 
-	t.Run("Should respond to messages", func(t *testing.T) {
+	t.Run("Should be able to accept message", func(t *testing.T) {
 
 		ws := startWebsocketServer(t)
 		defer ws.Close()
 
 		sentData := []byte("How are you")
+		assertWebSocketMessageSent(ws, sentData, t)
+	})
+
+	t.Run("Should be receive message", func(t *testing.T) {
+
+		ws := startWebsocketServer(t)
+		defer ws.Close()
+
+		sentData := []byte("How are you")
+		assertWebSocketMessageSent(ws, sentData, t)
 
 		within(t, timeout, func() {
-			assertWebSocketHasSentMessage(ws, sentData, t)
+			assertWebSocketReadMessageIsCorrect(ws, sentData, t)
 		})
 	})
 }
@@ -54,10 +64,20 @@ func startWebsocketServer(t *testing.T) *websocket.Conn {
 	return ws
 }
 
-func assertWebSocketHasSentMessage(ws *websocket.Conn, sentData []byte, t *testing.T) {
-	ws.WriteMessage(websocket.TextMessage, sentData)
-	_, data, _ := ws.ReadMessage()
-	assert.Equal(t, sentData, data)
+func assertWebSocketMessageSent(ws *websocket.Conn, sentData []byte, t *testing.T) {
+	err := ws.WriteMessage(websocket.TextMessage, sentData)
+	if err != nil {
+		t.Fatal("Failed to send message to websocket")
+	}
+}
+
+func assertWebSocketReadMessageIsCorrect(ws *websocket.Conn, expectedData []byte, t *testing.T) {
+	_, message, err := ws.ReadMessage()
+	if err != nil {
+		t.Fatal("Failed to send message to websocket")
+	}
+
+	assert.Equal(t, expectedData, message)
 }
 
 func within(t *testing.T, d time.Duration, assert func()) {
