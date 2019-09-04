@@ -11,7 +11,7 @@ func main() {
 	port := flag.Uint("port", 1234, "Port of server")
 	flag.Parse()
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), NewServer()); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), newServer()); err != nil {
 		log.Fatalf("Cannot start a server with port %d. %v", *port, err)
 	}
 }

@@ -18,7 +18,7 @@ func TestHttpServer(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
-		NewServer().ServeHTTP(response, request)
+		newServer().ServeHTTP(response, request)
 
 		expected, _ := ioutil.ReadFile("client.html")
 
@@ -83,7 +83,7 @@ func TestWebSocketServer(t *testing.T) {
 }
 
 func startWebsocketServer(t *testing.T) *websocket.Conn {
-	server := httptest.NewServer(NewServer())
+	server := httptest.NewServer(newServer())
 	defer server.Close()
 	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
 	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)

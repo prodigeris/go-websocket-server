@@ -11,15 +11,15 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-type WebSocketServer struct {
+type webSocketServer struct {
 	http.Handler
 }
 
-func (s WebSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
+func (s webSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "client.html")
 }
 
-func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
+func (s webSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	ws, _ := upgrader.Upgrade(w, r, nil)
 
 	for {
@@ -35,8 +35,8 @@ func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewServer() *WebSocketServer {
-	server := new(WebSocketServer)
+func newServer() *webSocketServer {
+	server := new(webSocketServer)
 
 	router := http.NewServeMux()
 	router.Handle("/", http.HandlerFunc(server.homePage))
