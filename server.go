@@ -23,9 +23,17 @@ func (s WebSocketServer) homePage(w http.ResponseWriter, r *http.Request) {
 func (s WebSocketServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	ws, _ := upgrader.Upgrade(w, r, nil)
 
-	_, message, _ := ws.ReadMessage()
-	message = bytes.Replace(message, []byte("?"), []byte("!"), -1)
-	ws.WriteMessage(websocket.TextMessage, message)
+	for {
+		messageType, message, _ := ws.ReadMessage()
+		if messageType != websocket.TextMessage {
+			ws.Close()
+
+			return
+		}
+
+		message = bytes.Replace(message, []byte("?"), []byte("!"), -1)
+		ws.WriteMessage(websocket.TextMessage, message)
+	}
 }
 
 func NewServer() *WebSocketServer {
